@@ -1,0 +1,116 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7f6;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.card, .dashboard-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
+
+.dashboard-card {
+    width: 550px;
+}
+
+label {
+    font-weight: 600;
+    color: #444;
+    font-size: 14px;
+    display: block;
+    margin-top: 10px;
+}
+
+input[type="email"], input[type="password"], input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+button[type="submit"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+ul {
+    padding-left: 0;
+    list-style: none;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+li {
+    background: #fafafa;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+}
+
+.download-link {
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.download-link:hover {
+    background: #218838;
+}
+
+.logout-btn {
+    display: block;
+    text-align: center;
+    background: #dc3545;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+.folder-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.folder-box {
+    background: #fdfdfd;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
