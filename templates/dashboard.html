@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Cloud Storage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard-card" style="width: 600px;">
+        <h2>Welcome, {{ user.username }}! 👋</h2>
+        <p><b>Email:</b> {{ user.email }}</p>
+
+        <hr>
+        <!-- Create Custom Folder -->
+        <h3>📁 Create New Folder (e.g. Wedding Photos)</h3>
+        <form action="/create-folder" method="post" style="display: flex; gap: 10px;">
+            <input type="text" name="foldername" placeholder="Enter folder name..." required style="margin: 0; flex: 1;">
+            <button type="submit" style="width: auto; padding: 0 20px;">Create Folder</button>
+        </form>
+
+        <hr>
+        <h3>📁 Your Folders:</h3>
+        
+        <!-- Folders List -->
+        <div class="folder-container">
+            {% for f in folders %}
+                <div class="folder-box" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>📁 <b>{{ f.foldername }}</b></span>
+                    <a href="/folder/{{ f.id }}" class="download-link" style="background: #6c757d;">Open Folder</a>
+                </div>
+            {% else %}
+                <p style="color: #777; font-size: 14px;">No folders created yet. Create a folder above to start adding photos/files!</p>
+            {% endfor %}
+        </div>
+
+        <br>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+</body>
+</html>
