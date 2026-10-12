@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Storage - Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="card" style="width: 400px;">
+        <h2>Cloud Storage Portal</h2>
+        
+        {% if error %}
+            <p style="color: red; text-align: center; font-size: 13px; margin-bottom: 15px;">{{ error }}</p>
+        {% endif %}
+
+        <form action="/login" method="post">
+            <label>Email ID:</label>
+            <input type="email" name="email" placeholder="aaa@aaa.com" required>
+            
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="123" required>
+            
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>
