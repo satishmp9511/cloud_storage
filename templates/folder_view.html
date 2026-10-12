@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Folder View - Cloud Storage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard-card" style="width: 650px;">
+        <h2>📁 Folder: {{ folder.foldername }}</h2>
+        <p><a href="/dashboard" style="color: #007bff; text-decoration: none;">← Back to Dashboard</a></p>
+
+        <hr>
+        <h3>📤 Add File to this Folder</h3>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="folder_id" value="{{ folder.id }}">
+            <input type="file" name="file" required>
+            <button type="submit">Upload into this Folder</button>
+        </form>
+
+        <hr>
+        <h3>📄 Files & Photos inside "{{ folder.foldername }}":</h3>
+        
+        <div class="file-grid" style="display: flex; flex-direction: column; gap: 12px;">
+            {% for file in files %}
+                <div style="background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    
+                    <!-- Agar image hai toh chota preview dikhayein -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        {% if file.filetype == "Image 🖼️" %}
+                            <img src="/view-file/{{ file.id }}" alt="{{ file.filename }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">
+                        {% else %}
+                            <div style="width: 50px; height: 50px; background: #e9ecef; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 20px;">📄</div>
+                        {% endif %}
+
+                        <div>
+                            <b>{{ file.filename }}</b><br>
+                            <small style="color: #666;">Type: {{ file.filetype }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 8px;">
+                        <a href="/view-file/{{ file.id }}" target="_blank" class="download-link" style="background: #17a2b8;">View</a>
+                        <a href="/download/{{ file.id }}" class="download-link">Download</a>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color: #777; font-size: 14px;">No files or photos uploaded in this folder yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
