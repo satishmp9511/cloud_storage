@@ -10,8 +10,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-    folders = relationship("FolderRecord", back_populates="owner")
-    files = relationship("FileRecord", back_populates="owner")
+    folders = relationship("FolderRecord", back_populates="owner", cascade="all, delete-orphan")
+    files = relationship("FileRecord", back_populates="owner", cascade="all, delete-orphan")
 
 class FolderRecord(Base):
     __tablename__ = "folders"
@@ -21,16 +21,16 @@ class FolderRecord(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="folders")
-    files = relationship("FileRecord", back_populates="folder")
+    files = relationship("FileRecord", back_populates="folder", cascade="all, delete-orphan")
 
 class FileRecord(Base):
     __tablename__ = "files"
 
     id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True)
-    filepath = Column(String)
+    filename = Column(String)
+    filepath = Column(String)  # Ab yahan Cloudinary ka secure URL save hoga
     filetype = Column(String)
-    folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True) # Kis folder me hai
+    folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="files")
