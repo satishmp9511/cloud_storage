@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./storage.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Supabase ke liye SSL requirement add ki gayi hai
+# Supabase ke sath secure connection ke liye sslmode require kiya gaya hai
 engine = create_engine(DATABASE_URL, connect_args={"sslmode": "require"})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
