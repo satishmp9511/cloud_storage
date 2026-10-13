@@ -1,37 +1,41 @@
 import os
-import shutil
 import hashlib
 from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+import pathlib
+from dotenv import load_dotenv
+
+import cloudinary
+import cloudinary.uploader
 
 import models
 from database import engine, SessionLocal, get_db
 
-import pathlib
-BASE_DIR = pathlib.Path(__file__).parent
+load_dotenv()
 
+# Cloudinary configuration (Render ke environment variables se uthayega)
+cloudinary.config(
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key = os.getenv("CLOUDINARY_API_KEY"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+)
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+BASE_DIR = pathlib.Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory="templates")
-
-UPLOAD_DIR = "uploads"
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR)
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Server start hone par 10 generic accounts create honge
 def seed_users():
     db = SessionLocal()
-    
-    # 💡 Yahan aap apne hisab se koi bhi username aur email change kar sakte hain:
     sample_users = [
         ("MyFolder1", "satish@b1.com"),       # Account 1
         ("MyFolder2", "rohit@b1.com"),         # Account 2
@@ -48,12 +52,10 @@ def seed_users():
     for uname, uemail in sample_users:
         existing = db.query(models.User).filter(models.User.email == uemail).first()
         if not existing:
-            hashed_pw = hash_password("all_sena") # Password sabka "12345" hi rahega
+            hashed_pw = hash_password("all_sena")
             new_user = models.User(username=uname, email=uemail, hashed_password=hashed_pw)
             db.add(new_user)
             db.commit()
-            db.refresh(new_user)
-            os.makedirs(os.path.join(UPLOAD_DIR, str(new_user.id)), exist_ok=True)
     db.close()
 
 seed_users()
@@ -83,7 +85,6 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     user_folders = db.query(models.FolderRecord).filter(models.FolderRecord.owner_id == user_id).all()
 
-    # Root files yahan se hata di gayi hain, ab sirf folders rahenge
     return templates.TemplateResponse(request, "dashboard.html", {"user": user, "folders": user_folders})
 
 @app.post("/create-folder")
@@ -104,11 +105,12 @@ def upload_file(file: UploadFile = File(...), folder_id: int = Form(None), db: S
     if not user_id:
         return RedirectResponse(url="/", status_code=303)
 
-    user_folder = os.path.join(UPLOAD_DIR, str(user_id))
-    file_path = os.path.join(user_folder, file.filename)
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        # File ko direct Cloudinary par upload karenge (Local uploads folder ka use khatam)
+        upload_result = cloudinary.uploader.upload(file.file, folder=f"cloud_storage_user_{user_id}")
+        file_url = upload_result.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cloud upload failed: {str(e)}")
 
     ext = file.filename.split(".")[-1].lower()
     if ext in ["jpg", "jpeg", "png", "gif", "webp"]:
@@ -122,7 +124,7 @@ def upload_file(file: UploadFile = File(...), folder_id: int = Form(None), db: S
 
     new_file = models.FileRecord(
         filename=file.filename, 
-        filepath=file_path, 
+        filepath=file_url, # Cloudinary ka secure URL save hoga
         filetype=ftype, 
         folder_id=folder_id if folder_id else None, 
         owner_id=user_id
@@ -135,8 +137,9 @@ def upload_file(file: UploadFile = File(...), folder_id: int = Form(None), db: S
 @app.get("/download/{file_id}")
 def download_file(file_id: int, db: Session = Depends(get_db)):
     file_record = db.query(models.FileRecord).filter(models.FileRecord.id == file_id).first()
-    if file_record and os.path.exists(file_record.filepath):
-        return FileResponse(file_record.filepath, filename=file_record.filename)
+    if file_record and file_record.filepath:
+        # Cloudinary URL par direct redirect kar denge download ke liye
+        return RedirectResponse(url=file_record.filepath, status_code=303)
     raise HTTPException(status_code=404, detail="File not found")
 
 @app.get("/logout")
@@ -163,6 +166,7 @@ def view_folder(folder_id: int, request: Request, db: Session = Depends(get_db))
 @app.get("/view-file/{file_id}")
 def view_file(file_id: int, db: Session = Depends(get_db)):
     file_record = db.query(models.FileRecord).filter(models.FileRecord.id == file_id).first()
-    if file_record and os.path.exists(file_record.filepath):
-        return FileResponse(file_record.filepath)
+    if file_record and file_record.filepath:
+        # Browser me direct Cloudinary URL open ho jayega
+        return RedirectResponse(url=file_record.filepath, status_code=303)
     raise HTTPException(status_code=404, detail="File not found")
